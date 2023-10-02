@@ -1,0 +1,460 @@
+---
+title: "Homework"
+output:
+  html_document: default
+  word_document: default
+  pdf_document: default
+classoption: fleqn
+---
+
+Théo Morvan
+Lucas Chaix
+Kenza Yacine
+
+DSB 2021-2022
+
+\
+
+#### 1) 
+
+It is a discrete distribution (k takes values in $\mathbb{N}$).
+The poisson law is a law of rare events.
+
+We could give theses examples :
+
+- the number of cases of a disease in a city
+
+- the number of lions seen during a safari
+
+- the number of goals scored during a football game
+
+\
+
+#### 2) 
+
+
+$\mathbb{E}_{\theta}[X] = 
+    \sum_{k=0}^\infty ke^{-\theta}\frac{\theta^k}{k!} = 
+    \sum_{k=1}^\infty ke^{-\theta}\frac{\theta^k}{k!} =  
+    \sum_{k=1}^\infty ke^{-\theta}\frac{\theta^k}{(k-1)!} = 
+    \sum_{k=0}^\infty ke^{-\theta}\frac{\theta^{k+1}}{k!} =
+    e^{-\theta}e^{\theta}\theta =
+    \theta
+  \\$
+
+
+$\mathbb{V}_{\theta}[X] = 
+    \mathbb{E}_{\theta}[X^2] - \mathbb{E}_{\theta}[X]^2 = 
+    \sum_{k=0}^\infty k^2e^{-\theta}\frac{\theta^k}{k!} - \theta^2 =
+    \sum_{k=0}^\infty (k^2-k+k) e^{-\theta}\frac{\theta^k}{k!} - \theta^2
+\\
+\mathbb{V}_{\theta}[X] = 
+    e^{-\theta}\left(\sum_{k=2}^\infty k(k-1)\frac{\theta^k}{k!} + \sum_{k=1}^\infty k\frac{\theta^k}{k!}\right)- \theta^2 = 
+    e^{-\theta}\left(\sum_{k=0}^\infty \theta^2\frac{\theta^k}{k!} + e^\theta\theta\right)- \theta^2 = 
+    \theta^2e^{-\theta}e^{\theta} + {\theta} - {\theta}^2 = {\theta}$
+
+   
+\
+
+#### 3)
+
+The $x_i$ are n observations of $X_i \sim \mathcal{P}(\theta)$, with $\theta$ in $\mathbb{R_+^*}$
+
+The corresponding statistical model is $\{{\mathbb{N}^n, \mathcal{P}(\mathbb{N}),P(\theta),\theta \in \mathbb{R_+^*} }\}$ 
+
+We are trying to estimate $\theta$.
+
+\
+
+#### 4)
+
+The likelihood function is the following:
+$$
+\ell_{x_1,...,x_n}(\theta) = p(x_1,...,x_n | \theta)
+= \prod_{i=1}^n \mathbb{P}_\theta(X_i = x_i | \theta)
+= \prod_{i=1}^n e^{-\theta}\frac{\theta^{x_i}}{x_i!}
+= e^{-n\theta} \prod_{i=1}^n \frac{\theta^{x_i}}{x_i!}
+$$
+
+The log-likelihood function is the following:
+$$
+\\
+\text{L}_{x_1,...,x_n}(\theta) = log\left(e^{-n\theta} \prod_{i=1}^n \frac{\theta^{x_i}}{x_i!}\right)
+= -n\theta + \sum_{i=1}^nlog(\frac{\theta^{x_i}}{x_i!})
+\\
+$$
+
+We can compute the Maximum Likelihood Estimator as follows:
+$$
+\text{L'}_{X_1,...,X_n}(\theta) = 0  \\\Leftrightarrow
+-n + \sum_{i=1}^n (\frac{X_i\theta^{X_i - 1}}{X_i!} \times \frac{X_i!}{\theta^{X_i}}) = 0 \\\Leftrightarrow
+-n + \frac{1}{\theta} \sum_{i=1}^n X_i = 0 \\\Leftrightarrow
+\hat{\theta}_\text{MLE} = \frac{1}{n} \sum_{i=1}^n X_i = \bar{X}_n
+$$
+
+
+\
+
+#### 5)
+
+We can first observe that:
+$\mathbb{E}[\hat{\theta}_\text{MLE}] = \frac{1}{n} \sum_{i=1}^n \mathbb{E}[X_i] =\frac{1}{n} \sum_{i=1}^n \theta = \theta \text{ (Linearity)} \\
+\mathbb{V}[\hat{\theta}_\text{MLE}] = \frac{1}{n^2} \sum_{i=1}^n \mathbb{V}[X_i] =\frac{1}{n^2} \sum_{i=1}^n \theta = \frac{\theta}{n} \text{(Independence)}$
+\
+
+Knowing that :
+$$
+\mathbb{E}[X_0] = \theta \\
+\hat{\theta}_\text{MLE} = \bar{X}_n
+\\
+\mathbb{V}[X_0] <\infty
+\\
+$$
+We can say that, according to the Linderberg-Lévy Theorem:
+$\sqrt{n}(\hat{\theta}_\text{MLE} - \theta)  \xrightarrow{\mathcal{D}} \mathcal{N}(0,\,\theta)$
+
+
+
+#### 6)
+
+$\hat{\theta}_{MLE}$ being an estimator for the variance of $X_0$, we can say that asymptotically:
+$$
+\sqrt{n}\frac{(\hat{\theta}_\text{MLE} - \theta)}{\sqrt(\hat{\theta}_{MLE})} \sim {\mathcal{t}_{n-1}} 
+$$
+
+```{r}
+n <- 100
+N <- 1000
+teta <- 3
+
+estim_gen <-function(X, n, teta) {
+  e_mle = mean(X)
+  estim = sqrt(n) * (e_mle - teta) / sqrt(e_mle)
+  return(estim)
+}
+```
+
+```{r}
+sample <- lapply(1:N, function(i) rpois(n, teta))
+estimator <- lapply(sample, function(X) estim_gen(X, n, teta))
+
+est <- unlist(estimator, use.names = FALSE)
+
+hist(est, breaks = 20)
+qqplot(est, rnorm(N,0,1), xlab = "Quantiles of estimator", ylab="Quantiles of normal distribution")
+
+```
+
+#### 7)
+
+$$
+{\mathbb{P}_{\theta}} (\hat{\theta}_{MLE} - \mathcal{s}_\alpha< \theta < \hat{\theta}_{MLE} + \mathcal{s}_\alpha) \geq 1 - \alpha \\\Leftrightarrow
+{\mathbb{P}_{\theta}} (|\hat{\theta}_{MLE} - \theta| < \mathcal{s}_\alpha) \geq 1 - \alpha \\\Leftrightarrow
+{\mathbb{P}_{\theta}} (\frac{|\hat{\theta}_{MLE} - \theta|}{\sqrt{\hat{\theta}_{MLE}}/\sqrt{n}} < \frac{\mathcal{s}_\alpha}{\sqrt{\hat{\theta}_{MLE}}/\sqrt{n}}) \geq 1 - \alpha \\
+\\
+$$
+Asymptotically :
+$$
+2f(\sqrt{n}\frac{\mathcal{s}_\alpha}{\sqrt{\hat{\theta}_{MLE}}}) - 1 \geq 1 - \alpha 
+$$
+where $\mathcal{f}$ is the distribution function of the Student's law with n-1 degrees of freedom
+
+$$
+f(\sqrt{n}\frac{\mathcal{s}_\alpha}{\sqrt{\hat{\theta}_{MLE}}}) \geq 1 - \frac{\alpha}{2}\\\Leftrightarrow
+\sqrt{n}\frac{\mathcal{s}_\alpha}{\sqrt{\hat{\theta}_{MLE}}} \geq \mathcal{t}_{1-\frac{\alpha}{2}} (n-1)
+$$
+where $\mathcal{t}_{1-\frac{\alpha}{2}} (n-1)$ is the $1-\frac{\alpha}{2}$ quantile of the Student's law with (n-1) degrees of freedom.
+
+Therefore
+$$
+\mathcal{s}_{\alpha} = \frac{\sqrt{\hat{\theta}}_{MLE}}{\sqrt{n}}\mathcal{t}_{1-\frac{\alpha}{2}}(n-1)
+$$
+
+Hence, the confidence interval is:
+$$
+\left[ \hat{\theta}_{MLE}- \frac{\sqrt{\hat{\theta}}_{MLE}}{\sqrt{n}}\mathcal{t}_{1-\frac{\alpha}{2}}(n-1) \hspace{2 mm} ;\hspace{2 mm} \hat{\theta}_{MLE}+ \frac{\sqrt{\hat{\theta}}_{MLE}}{\sqrt{n}}\mathcal{t}_{1-\frac{\alpha}{2}}(n-1) \right]
+$$
+
+\
+
+#### 8) 
+
+We have computed that $\mathbb{E}[X]=\theta$.
+
+So we can propose $\hat{\theta_1}=\frac{1}{n}\sum_{i=1}^n X_i = \hat{\theta}_{MLE}$.
+
+Similarily, $\mathbb{V}[X]=\theta$, so we can propose $\hat{\theta_2}=\frac{1}{n}\sum_{i=1}^n (X_i - \bar{X_n})^2$ as an estimator of $\theta$ (as the variance of $X_0$)
+
+\
+
+#### 9)
+
+$\mathbb{E}[\hat{\theta}_{MLE}]=\theta \hspace{8 mm}$ so $\hat{\theta}_{MLE}$ is unbiased
+
+$\mathbb{V}[\hat{\theta}_{MLE}]=\frac{\theta}{n} \hspace{8 mm}$ so its quadratic risk is $\frac{\theta}{n}$
+
+\
+
+#### 10)
+
+$\hat{\theta_2}=\frac{1}{n}\sum_{i=1}^n (X_i - \bar{X_n})^2 = \frac{1}{n}\sum_{i=1}^n (X_i - \theta + \theta  \bar{X_n})^2=
+\frac{1}{n}\sum_{i=1}^n \left[(X_i - \theta)^2 + 2(X_i - \theta)(\theta -\bar{X_n}) + (\theta -\bar{X_n})^2 \right] \\=
+\frac{1}{n}\sum_{i=1}^n (X_i - \theta)^2 + 2(\theta -\bar{X_n})\sum_{i=1}^n(X_i - \theta) + n(\theta -\bar{X_n})^2 \\ =
+\frac{1}{n}\left[ \sum_{i=1}^n (X_i - \theta)^2 + 2(\theta -\bar{X_n})\left(\sum_{i=1}^nX_i - n\theta \right) + n(\theta -\bar{X_n})^2 \right] \\=
+\frac{1}{n} \sum_{i=1}^n (X_i - \theta)^2 - 2(\theta -\bar{X_n})^2 + (\theta -\bar{X_n}) \\ =
+\frac{1}{n} \sum_{i=1}^n (X_i - \theta)^2 - (\theta -\bar{X_n})^2$
+
+\
+
+#### 11) 
+
+$\mathbb{E}[(\theta - \bar{X_n})^2]=\theta^2 - 2\theta\mathbb{E}[\bar{X_n}] + \mathbb{E}[\bar{X_n}^2] \\$
+
+Knowing $\mathbb{E}[\bar{X_n}^2] = V(\bar{X_n}) + \mathbb{E}[\bar{X_n}]^2$
+
+We have $\mathbb{E}[(\theta - \bar{X_n})^2]= \theta^2 - 2\theta^2 + \frac{\theta}{n} + \theta^2 = \frac{\theta}{n}$
+
+Then, we have
+$\mathbb{E}[\hat{\theta_2}] = \frac{1}{n} \sum_{i=1}^n \mathbb{E}((X_i-\theta)^2) - \mathbb{E}[(\theta - \bar{X_n})^2] \\ =
+\frac{1}{n} \sum_{i=1}^n \left[ \mathbb{E}(X_i^2) -2\theta\mathbb{E}(X_i) + \theta^2 \right] - \frac{\theta}{n} \\=
+\frac{1}{n} \sum_{i=1}^n \left[ \theta^2 + \theta -2\theta^2 + \theta^2 \right] - \frac{\theta}{n} \\=
+\frac{1}{n} \sum_{i=1}^n\theta - \frac{\theta}{n} \\=
+\frac{n-1}{n}\theta$
+
+
+
+Therefore, $\hat{\theta_2}$ is a biased estimator with bias equal to $-\frac{\theta}{n}$.
+
+We can get an unbiased estimator: $\frac{n}{n-1}\hat{\theta_2}$
+
+
+
+
+## Exercice 2
+
+### Question 1)
+```{r}
+library(ggplot2)
+library(tidyverse)
+library(reshape2)
+library(gridExtra)
+```
+
+
+```{r}
+df <- read.csv(file = 'season-1718_csv.csv')
+```
+
+It contains a lit of all the games in first division of the Premier League of season 2017-2018, and informaton about this games
+FTHG (full time home team goals) : nb of goals scored by home team
+FTAG : nb of goals scored by away team
+FTR : winner (H : home team / A : away team / D : tie)
+
+
+```{r}
+home_points <- function(x) {
+  valeur <- 0
+  if (x == 'H') {
+    valeur <- 3
+  } else if (x == 'D') {
+    valeur <- 1
+  } else if (x == 'A') {
+    valeur <- 0
+  }
+valeur
+}
+
+away_points <- function(x) {
+  valeur <- 0
+  if (x == 'H') {
+    valeur <- 0
+  } else if (x == 'D') {
+    valeur <- 1
+  } else if (x == 'A') {
+    valeur <- 3
+  }
+  valeur
+}
+```
+
+```{r}
+df$HomeTeamPoints <- unlist(lapply(df$FTR, home_points)) #Compute the number of points won by the Home team
+df$AwayTeamPoints <- unlist(lapply(df$FTR, away_points)) #Compute the number of points won by the Away team
+df_home <- data.frame(aggregate(df$HomeTeamPoints, by=list(Category=df$HomeTeam), FUN=sum)) #Compute the total number of points taken at home over the season
+df_away <- data.frame(aggregate(df$AwayTeamPoints, by=list(Category=df$AwayTeam), FUN=sum)) #Compute the total number of points taken away over the season
+colnames(df_home) <-  c('Team','HomePoints')
+colnames(df_away)<- c('Team','AwayPoints')
+df_merge <-merge(x=df_home, y=df_away)
+df_merge$total_points <- rowSums(df_merge[,2:3])
+df_merge <- df_merge[order(df_merge$total_points),] 
+df_merge$rank<- nrow(df_merge[order(df_merge$total_points),]) + 1 - 1:nrow(df_merge[order(df_merge$total_points),])
+df_merge[order(df_merge$rank, decreasing= FALSE),]
+```
+
+```{r}
+number_points_arsenal <- df_merge[df_merge$Team=='Arsenal',4]
+rank_arsenal <- df_merge[df_merge$Team=='Arsenal',5]
+
+print(c('number of points and rank of Arsenal :' ,number_points_arsenal,rank_arsenal))
+```
+
+
+
+
+```{r}
+
+par(mfrow=c(1,2))
+hist(df_merge$HomePoints,col = 'red', breaks = 15, main = 'Hist of home points', cex.main = 1.5, xlab='Number of points') 
+hist(df_merge$AwayPoints,col = 'blue', breaks = 15, main = 'Hist of away points', cex.main = 1.5, xlab = 'Number of points')
+
+df_melt <- melt(df_merge[,1:4], id=c('Team')) # transforming the data for the ggplot visualization
+
+
+
+
+
+# densities plot
+ggplot(df_melt, aes(x = value, fill = variable)) + geom_density(alpha = 0.5) +
+  scale_y_continuous("Distribution") + 
+  labs(title="Distribution of won Points") +
+  theme(plot.title = element_text(size = 14))
+```
+
+We can remark that the two distributions seem different. It seems coherent with our intuition that the team playing at home gains more points in average than the team playing away.
+
+### Question 3
+
+We have n games which correspond to n observations of two laws : the number of goals scored by the team playing at home and the one abroad. We then have two models, and we assume that both laws follow a Poisson law with parameter  $ \lambda$ and $\mu$ respectively.
+We can define our models as following :
+ $\{{\mathbb{N}^n, \mathcal{P}(\mathbb{N}),P(\lambda),\lambda \in \mathbb{R_+^*} }\}$ and $\{{\mathbb{N}^n, \mathcal{P}(\mathbb{N}),P(\mu),\mu \in \mathbb{R_+^*} }\}$
+
+### Question 4
+```{r}
+local_mean = mean(df$FTHG)
+visiting_mean = mean(df$FTAG)
+local_var = var(df$FTHG)
+visiting_var = var(df$FTAG)
+
+print(c("Av. #goal for local teams", local_mean))
+print(c("Av. #goal for visiting teams", visiting_mean))
+print(c("variance for local teams", local_var))
+print(c("variance for local teams", visiting_var))
+
+lambda_hat = sum(df$FTHG)/length(df$FTHG)
+mu_hat = sum(df$FTAG)/length(df$FTAG)
+
+print(c("Estimation of lambda", lambda_hat))
+print(c("Estimation of mu", mu_hat))
+```
+
+
+```{r}
+
+df_goal_away <- data.frame(aggregate(df$FTAG, by=list(Category=df$AwayTeam), FUN= sum))
+df_goal_home <- data.frame(aggregate(df$FTHG,by=list(Category=df$AwayTeam), FUN= sum))
+
+df_goals <- melt(df[, 5:6])
+
+l <- ggplot(df) + geom_bar(aes(FTAG), color='blue') + 
+  labs(title="Empirical Distribution of number of goals of local team") +
+  theme(plot.title = element_text(size = 8.7)) # as we are dealing with integer data, an histogram and bar plot turn out to be the same
+g <- ggplot(df) + geom_bar(aes(FTHG), color='red') + 
+  labs(title="Empirical Distribution of number of goals of away team") +
+  theme(plot.title = element_text(size = 8.7))
+grid.arrange(l, g, nrow =1)
+```
+
+Given the questions of the first part, we know that $ \hat\theta_{mle}$ = empirical mean
+It seems that both variables are following a poisson distribution
+so we are going to compare our empirical data to the theoritical distributions both for the home and away goals
+
+```{r}
+n<-nrow(df)
+par(mfrow=c(2,2))
+hist(rpois(n, local_mean),col ='lightblue', main = 'Poisson Distribution lambda = local_mean', cex.main=1, xlab='number of goals')
+hist(df_goals[df_goals$variable=='FTHG',2], col = 'darkblue', main = 'Empirical distribution local goals', cex.main=1, xlab='number of goals')
+
+hist(rpois(n, visiting_mean),col = 'orange', main = 'Poisson Distribution lambda = away_mean', cex.main=1, xlab='number of goals')
+hist(df_goals[df_goals$variable=='FTAG',2], col = 'red', main = 'Empirical Distribution away goals', cex.main=1, xlab='number of goals')
+```
+
+
+When we compare the theoritcal data and the expiremental data, it confirms that our statistical model with two poisson distribution seems correct.
+
+
+
+### question 5
+
+
+```{r}
+CI_Poisson <- function(vector, alpha) {
+  theta_mle <- mean(vector)
+  n <- length(vector)
+  t_alpha <- qt(1 - alpha/2, df=n-1)
+  lower_bound <- theta_mle - t_alpha*sqrt(theta_mle/n)
+  upper_bound <- theta_mle + t_alpha*sqrt(theta_mle/n)
+  return(c(lower_bound,upper_bound))
+}
+print(CI_Poisson(df$FTHG, 0.05))
+print(CI_Poisson(df$FTAG, 0.05))
+
+```
+
+
+
+The 2 CI do not cross. Mu and lambda have a 95% chance to be in their own CI. There is 95% chance that they are not equal and thus that the distribution of the number of goals scored by the home team and the visiting team is different.
+
+
+### Question 6
+We want to test whether the two distributions are the same (i.e the two variables follow the same law or not).
+Thus we will perform a Wilcoxon Test for 2 samples / Mann-Whitney Test with the following hypothesis :  
+
+H0 : they have the same law (i.e $\lambda$ = $\mu$ in our case)
+H1 : They follow different laws (i.e $\lambda$ ≠ $\mu$ in our case)
+
+```{r}
+test <- wilcox.test(df$FTHG, df$FTAG, paired = T)
+test$statistic
+test
+
+```
+The p-value is strictly lower than 5%, we can reject H0 and validate H1 : the two distributions do not come from one global distribution.We can than guess that lambda and mu are different.
+
+We also perform a student test to confirm our intuition.
+H0 : There is no effective difference between the two empirical means (and hence $\lambda$ = $\mu$ ) vs
+H1 : effective difference (i.e $\lambda$ ≠ $\mu$)
+```{r}
+
+test_bis <- t.test(df$FTHG, df$FTAG)
+test_bis
+```
+Reminder : the $p_{value} = P_0(|T| > t)$ where T is the statistic and t the realization of that statistic. T is supposed to behave differently under H1 than hH0.
+The p-value is once again strictly lower than 5%, we can reject H0 with confidence.
+
+
+### Question 7
+```{r}
+goals_team <- function(team){
+ goals <- c(df[df$HomeTeam==team,]$FTHG,df[df$AwayTeam==team,]$FTAG )
+ return(goals)
+}
+goals_city <- goals_team('Man City')
+goals_liverpool <- goals_team('Liverpool')
+df_final <- data.frame(goals_city,goals_liverpool)
+l <- ggplot(df_final) + geom_bar(aes(goals_city), color='blue') + labs(title="Number of Goals of City") +
+  theme(plot.title = element_text(size = 8.7))
+g <- ggplot(df_final) + geom_bar(aes(goals_liverpool), color='red') + labs(title="Number of Goals of Liverpool") +
+  theme(plot.title = element_text(size = 8.7))
+grid.arrange(l, g,  nrow = 1)
+```
+```{r}
+final_test <- t.test(goals_city,goals_liverpool, paired = T)
+final_test
+```
+
+
+The P-value with the student test is higher than 5%. We cannot reject H0. We cannot conclude that the two offences are significantly different.
+
+
+
+
